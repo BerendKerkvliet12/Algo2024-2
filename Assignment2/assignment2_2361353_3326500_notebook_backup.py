@@ -371,5 +371,228 @@ class Graph(GraphBluePrint):
             y += dy
         return None, 0
 
+############ CODE BLOCK 120 ################
+
+class FloodFillSolverGraph(FloodFillSolver):
+    """
+    A class instance should at least contain the following attributes after being called:
+        :param queue: A queue that contains all the nodes that need to be visited.
+        :type queue: collections.deque
+        :param history: A dictionary containing the coordinates that will be visited and as values the coordinate that lead to this coordinate.
+        :type history: dict[tuple[int], tuple[int]]
+    """
+    def __call__(self, graph, source, destination):      
+        """
+        This method gives a shortest route through the grid from source to destination.
+        You start at the source and the algorithm ends if you reach the destination, both nodes should be included in the path.
+        A route consists of a list of nodes (which are coordinates).
+
+        Hint: The history is already given as a dictionary with as keys the node in the state-space graph and
+        as values the previous node from which this node was visited.
+
+        :param graph: The graph that represents the map.
+        :type graph: Graph
+        :param source: The node where the path starts.
+        :type source: tuple[int]
+        :param destination: The node where the path ends.
+        :type destination: tuple[int]
+        :return: The shortest route, which consists of a list of nodes and the length of the route.
+        :rtype: list[tuple[int]], float
+        """       
+        self.queue = deque([source])
+        self.history = {source: None}
+        
+        while self.queue:
+            current = self.queue.popleft()
+            
+            if current == destination:
+                break
+            
+            for neighbor in self.next_step(current):
+                if neighbor not in self.history:
+                    self.queue.append(neighbor)
+                    self.history[neighbor] = current
+        
+        path = []
+        step = destination
+        while step is not None:
+            path.append(step)
+            step = self.history.get(step)
+        
+        path.reverse()
+        return path, len(path)
+
+
+    # def find_path(self):
+    #     """
+    #     This method finds the shortest paths between the source node and the destination node.
+    #     It also returns the length of the path. 
+        
+    #     Note, that going from one node to the next has a length of 1.
+
+    #     :return: A path that is the optimal route from source to destination and its length.
+    #     :rtype: list[tuple[int]], float
+    #     """
+    #     raise NotImplementedError("Please complete this method")       
+
+    def next_step(self, node):
+        """
+        This method returns the next possible actions.
+
+        :param node: The current node
+        :type node: tuple[int]
+        :return: A list with possible next nodes that can be visited from the current node.
+        :rtype: list[tuple[int]]  
+        """
+        y, x = node
+        neighbors = []
+        for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            ny, nx = y + dy, x + dx
+            if 0 <= ny < graph.map.shape[0] and 0 <= nx < graph.map.shape[1] and graph.map[ny, nx] != 0:
+                neighbors.append((ny, nx))
+        return neighbors
+
+############ CODE BLOCK 130 ################
+
+class BFSSolverShortestPath():
+    """
+    A class instance should at least contain the following attributes after being called:
+        :param priorityqueue: A priority queue that contains all the nodes that need to be visited including the distances it takes to reach these nodes.
+        :type priorityqueue: list[tuple[tuple(int), float]]
+        :param history: A dictionary containing the nodes that will be visited and 
+                        as values the node that lead to this node and
+                        the distance it takes to get to this node.
+        :type history: dict[tuple[int], tuple[tuple[int], int]]
+    """   
+    def __call__(self, graph, source, destination):      
+        """
+        This method gives the shortest route through the graph from the source to the destination node.
+        You start at the source node and the algorithm ends if you reach the destination node, 
+        both nodes should be included in the path.
+        A route consists of a list of nodes (which are coordinates).
+
+        :param graph: The graph that represents the map.
+        :type graph: Graph
+        :param source: The node where the path starts
+        :type source: tuple[int] 
+        :param destination: The node where the path ends
+        :type destination: tuple[int]
+        :param vehicle_speed: The maximum speed of the vehicle.
+        :type vehicle_speed: float
+        :return: The shortest route and the time it takes. The route consists of a list of nodes.
+        :rtype: list[tuple[int]], float
+        """       
+        self.priorityqueue = [(source, 0)]
+        self.history = {source: (None, 0)}
+        self.destination = destination
+        
+        self.main_loop()
+        return self.find_path()    
+
+    def find_path(self):
+        """
+        This method finds the shortest paths between the source node and the destination node.
+        It also returns the length of the path. 
+        
+        Note, that going from one node to the next has a length of 1.
+
+        :return: A path that is the optimal route from source to destination and its length.
+        :rtype: list[tuple[int]], float
+        """
+        path = []
+        step = self.destination
+        while step is not None:
+            path.append(step)
+            step = self.history[step][0]
+        
+        path.reverse()
+        return path, self.history[self.destination][1]      
+
+    def main_loop(self):
+        """
+        This method contains the logic of the flood-fill algorithm for the shortest path problem.
+
+        It does not have any inputs nor outputs. 
+        Hint, use object attributes to store results.
+        """
+        while not self.priorityqueue.empty():
+            current_distance, current_node = self.priorityqueue.get()
+            
+            if self.base_case(current_node):
+                break
+            
+            for neighbor in self.next_step(current_node):
+                distance = current_distance + self.new_cost(current_node, neighbor)
+                
+                if neighbor not in self.history or distance < self.history[neighbor][1]:
+                    self.history[neighbor] = (current_node, distance)
+                    self.priorityqueue.put((distance, neighbor))
+
+    def base_case(self, node):
+        """
+        This method checks if the base case is reached.
+
+        :param node: The current node
+        :type node: tuple[int]
+        :return: Returns True if the base case is reached.
+        :rtype: bool
+        """
+        return node == self.destination
+
+    def new_cost(self, previous_node, distance, speed_limit):
+        """
+        This is a helper method that calculates the new cost to go from the previous node to
+        a new node with a distance and speed_limit between the previous node and new node.
+
+        For now, speed_limit can be ignored.
+
+        :param previous_node: The previous node that is the fastest way to get to the new node.
+        :type previous_node: tuple[int]
+        :param distance: The distance between the node and new_node
+        :type distance: int
+        :param speed_limit: The speed limit on the road from node to new_node. 
+        :type speed_limit: float
+        :return: The cost to reach the node.
+        :rtype: float
+        """
+        y1, x1 = previous_node
+        y2, x2 = new_node
+        return abs(y1 - y2) + abs(x1 - x2)
+
+    def step(self, node, new_node, distance, speed_limit):
+        """
+        One step in the BFS algorithm. For now, speed_limit can be ignored.
+
+        :param node: The current node
+        :type node: tuple[int]
+        :param new_node: The next node that can be visited from the current node
+        :type new_node: tuple[int]
+        :param distance: The distance between the node and new_node
+        :type distance: int
+        :param speed_limit: The speed limit on the road from node to new_node. 
+        :type speed_limit: float
+        """
+        new_cost = self.history[node][1] + distance
+        if new_node not in self.history or new_cost < self.history[new_node][1]:
+            self.history[new_node] = (node, new_cost)
+            self.priorityqueue.put((new_cost, new_node))
+    
+    def next_step(self, node):
+        """
+        This method returns the next possible actions.
+
+        :param node: The current node
+        :type node: tuple[int]
+        :return: A list with possible next nodes that can be visited from the current node.
+        :rtype: list[tuple[int]]  
+        """
+        y, x = node
+        neighbors = []
+        for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            ny, nx = y + dy, x + dx
+            if 0 <= ny < self.graph.map.shape[0] and 0 <= nx < self.graph.map.shape[1] and self.graph.map[ny, nx] != 0:
+                neighbors.append((ny, nx))
+        return neighbors
+
 
 ############ END OF CODE BLOCKS, START SCRIPT BELOW! ################

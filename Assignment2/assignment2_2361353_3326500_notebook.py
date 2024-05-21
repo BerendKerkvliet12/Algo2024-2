@@ -485,7 +485,6 @@ class BFSSolverShortestPath():
         self.priorityqueue = [(source, 0)]
         self.history = {source: (None, 0)}
         self.destination = destination
-        
         self.main_loop()
         return self.find_path()    
 
@@ -555,9 +554,7 @@ class BFSSolverShortestPath():
         :return: The cost to reach the node.
         :rtype: float
         """
-        y1, x1 = previous_node
-        y2, x2 = new_node
-        return abs(y1 - y2) + abs(x1 - x2)
+        return distance + self.history[previous_node][1]
 
     def step(self, node, new_node, distance, speed_limit):
         """

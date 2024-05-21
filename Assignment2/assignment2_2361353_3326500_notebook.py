@@ -250,8 +250,16 @@ class Graph(GraphBluePrint):
         :param actions: The actions possible from this coordinate, an action is defined as an action in the coordinate state-space.
         :type actions: list[tuple[int]]
         """
-        if len(actions) == 4 or len(actions) == 3 :
+        # if len(actions) == 4 or len(actions) == 3 or :
+        #     self.adjacency_list[coordinate] = set()
+        if len(actions) in [1, 3, 4]:
             self.adjacency_list[coordinate] = set()
+        #add corners in the graph
+        elif len(actions) == 2:
+        #check if the two actions form a corner
+            (x1 , y1) , (x2, y2) = actions
+            if (x1 != x2 and y1 != y2):
+                self.adjacency_list[coordinate] = set()  
                            
     def neighbour_coordinates(self, coordinate):
         """

@@ -482,9 +482,11 @@ class BFSSolverShortestPath():
         :return: The shortest route and the time it takes. The route consists of a list of nodes.
         :rtype: list[tuple[int]], float
         """       
-        self.priorityqueue = [(source, 0)]
+        self.priorityqueue = [(0, source)]
         self.history = {source: (None, 0)}
         self.destination = destination
+        self.graph = graph
+        self.vehicle_speed = 1  # For now, we assume the vehicle speed is 1
         
         self.main_loop()
         return self.find_path()    
@@ -515,18 +517,19 @@ class BFSSolverShortestPath():
         It does not have any inputs nor outputs. 
         Hint, use object attributes to store results.
         """
-        while not self.priorityqueue.empty():
-            current_distance, current_node = self.priorityqueue.get()
+        while self.priorityqueue:
+            self.priorityqueue.sort()  # Ensure the list is sorted to always pop the smallest element
+            current_distance, current_node = self.priorityqueue.pop(0)
             
             if self.base_case(current_node):
                 break
             
             for neighbor in self.next_step(current_node):
-                distance = current_distance + self.new_cost(current_node, neighbor)
+                distance = current_distance + self.new_cost(current_node, neighbor, speed_limit=1)
                 
                 if neighbor not in self.history or distance < self.history[neighbor][1]:
                     self.history[neighbor] = (current_node, distance)
-                    self.priorityqueue.put((distance, neighbor))
+                    self.priorityqueue.append((distance, neighbor))
 
     def base_case(self, node):
         """
@@ -575,7 +578,7 @@ class BFSSolverShortestPath():
         new_cost = self.history[node][1] + distance
         if new_node not in self.history or new_cost < self.history[new_node][1]:
             self.history[new_node] = (node, new_cost)
-            self.priorityqueue.put((new_cost, new_node))
+            self.priorityqueue.append((new_cost, new_node))
     
     def next_step(self, node):
         """

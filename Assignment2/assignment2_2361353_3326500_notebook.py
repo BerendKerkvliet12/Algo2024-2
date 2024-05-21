@@ -343,5 +343,39 @@ class Graph(GraphBluePrint):
             for edge in edges:
                 plt.arrow(node[1], node[0], edge[0][1] - node[1], edge[0][0] - node[0], width=width, color=color)
 
+############ CODE BLOCK 15 ################
+    def find_edges(self):
+        """
+        This method does a depth-first/brute-force search for each node to find the edges of each node.
+        """
+        for node in self.adjacency_list:
+            stack = [node]
+            visited = set()
+            while stack:
+                current_node = stack.pop()
+                if current_node in visited:
+                    continue
+                visited.add(current_node)
+                actions = self.neighbour_coordinates(current_node)
+                for action in actions:
+                    distance = abs(coordinate1[0] - coordinate2[0]) + abs(coordinate1[1] - coordinate2[1])
+                    self.adjacency_list[coordinate].add((action, distance))
+                for action in actions:
+                    stack.append(action)
+            
+
+    def find_next_node_in_adjacency_list(self, node, direction):
+        """
+        This is a helper method for find_edges to find a single edge given a node and a direction.
+
+        :param node: The node from which we try to find its "neighboring node" NOT its neighboring coordinates.
+        :type node: tuple[int]
+        :param direction: The direction we want to search in this can only be 4 values (0, 1), (1, 0), (0, -1) or (-1, 0).
+        :type direction: tuple[int]
+        :return: This returns the first node in this direction and the distance.
+        :rtype: tuple[int], int 
+        #use adjency list to find the next node in the direction
+        """
+
 
 ############ END OF CODE BLOCKS, START SCRIPT BELOW! ################

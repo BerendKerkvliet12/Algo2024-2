@@ -423,7 +423,186 @@ class FloodFillSolverGraph(FloodFillSolver):
         :return: A list with possible next nodes that can be visited from the current node.
         :rtype: list[tuple[int]]  
         """
+        return [edge[0] for edge in self.graph[node]]
+
+############ CODE BLOCK 130 ################
+
+class BFSSolverShortestPath():
+    """
+    A class instance should at least contain the following attributes after being called:
+        :param priorityqueue: A priority queue that contains all the nodes that need to be visited including the distances it takes to reach these nodes.
+        :type priorityqueue: list[tuple[tuple(int), float]]
+        :param history: A dictionary containing the nodes that will be visited and 
+                        as values the node that lead to this node and
+                        the distance it takes to get to this node.
+        :type history: dict[tuple[int], tuple[tuple[int], int]]
+    """   
+    def __call__(self, graph, source, destination):      
+        """
+        This method gives the shortest route through the graph from the source to the destination node.
+        You start at the source node and the algorithm ends if you reach the destination node, 
+        both nodes should be included in the path.
+        A route consists of a list of nodes (which are coordinates).
+
+        :param graph: The graph that represents the map.
+        :type graph: Graph
+        :param source: The node where the path starts
+        :type source: tuple[int] 
+        :param destination: The node where the path ends
+        :type destination: tuple[int]
+        :param vehicle_speed: The maximum speed of the vehicle.
+        :type vehicle_speed: float
+        :return: The shortest route and the time it takes. The route consists of a list of nodes.
+        :rtype: list[tuple[int]], float
+        """ 
+        self.priorityqueue = [(0, source)]
+        self.history = {source: (None, 0)}
+        self.destination = destination
+        self.graph = graph
+
+        self.main_loop()
+        return self.find_path()   
+
+    def find_path(self):
+        """
+        This method finds the shortest paths between the source node and the destination node.
+        It also returns the length of the path. 
+        
+        Note, that going from one node to the next has a length of 1.
+
+        :return: A path that is the optimal route from source to destination and its length.
+        :rtype: list[tuple[int]], float
+        """     
+        path = []
+        step = self.destination
+        while step is not None:
+            path.append(step)
+            step = self.history[step][0]
+        
+        path.reverse()
+        return path, self.history[self.destination][1]
+
+    def main_loop(self):
+        """
+        This method contains the logic of the flood-fill algorithm for the shortest path problem.
+
+        It does not have any inputs nor outputs. 
+        Hint, use object attributes to store results.
+        """
+        while self.priorityqueue:
+            self.priorityqueue.sort()  # Ensure the list is sorted to always pop the smallest element
+            current_distance, current_node = self.priorityqueue.pop(0)
+            
+            if self.base_case(current_node):
+                break
+            
+            for neighbor, distance, speed_limit in self.next_step(current_node):
+                self.step(current_node, neighbor, distance, speed_limit)
+
+    def base_case(self, node):
+        """
+        This method checks if the base case is reached.
+
+        :param node: The current node
+        :type node: tuple[int]
+        :return: Returns True if the base case is reached.
+        :rtype: bool
+        """
+        return node == self.destination
+
+
+    def new_cost(self, previous_node, distance, speed_limit):
+        """
+        This is a helper method that calculates the new cost to go from the previous node to
+        a new node with a distance and speed_limit between the previous node and new node.
+
+        For now, speed_limit can be ignored.
+
+        :param previous_node: The previous node that is the fastest way to get to the new node.
+        :type previous_node: tuple[int]
+        :param distance: The distance between the node and new_node
+        :type distance: int
+        :param speed_limit: The speed limit on the road from node to new_node. 
+        :type speed_limit: float
+        :return: The cost to reach the node.
+        :rtype: float
+        """
+        return self.history[previous_node][1] + distance
+        
+
+    def step(self, node, new_node, distance, speed_limit):
+        """
+        One step in the BFS algorithm. For now, speed_limit can be ignored.
+
+        :param node: The current node
+        :type node: tuple[int]
+        :param new_node: The next node that can be visited from the current node
+        :type new_node: tuple[int]
+        :param distance: The distance between the node and new_node
+        :type distance: int
+        :param speed_limit: The speed limit on the road from node to new_node. 
+        :type speed_limit: float
+        """
+        new_cost = self.new_cost(node, distance, speed_limit)
+        if new_node not in self.history or new_cost < self.history[new_node][1]:
+            self.history[new_node] = (node, new_cost)
+            self.priorityqueue.append((new_cost, new_node))
+    
+    def next_step(self, node):
+        """
+        This method returns the next possible actions.
+
+        :param node: The current node
+        :type node: tuple[int]
+        :return: A list with possible next nodes that can be visited from the current node.
+        :rtype: list[tuple[int]]  
+        """
         return list(self.graph[node])
+
+############ CODE BLOCK 200 ################
+
+class BFSSolverFastestPath(BFSSolverShortestPath):
+    """
+    A class instance should at least contain the following attributes after being called:
+        :param priorityqueue: A priority queue that contains all the nodes that need to be visited 
+                              including the time it takes to reach these nodes.
+        :type priorityqueue: list[tuple[tuple[int], float]]
+        :param history: A dictionary containing the nodes that will be visited and 
+                        as values the node that lead to this node and
+                        the time it takes to get to this node.
+        :type history: dict[tuple[int], tuple[tuple[int], float]]
+    """   
+    def __call__(self, graph, source, destination, vehicle_speed):      
+        """
+        This method gives a fastest route through the grid from source to destination.
+
+        This is the same as the `__call__` method from `BFSSolverShortestPath` except that 
+        we need to store the vehicle speed. 
+        
+        Here, you can see how we can overwrite the `__call__` method but 
+        still use the `__call__` method of BFSSolverShortestPath using `super`.
+        """
+        self.vehicle_speed = vehicle_speed
+        return super(BFSSolverFastestPath, self).__call__(graph, source, destination)
+
+    def new_cost(self, previous_node, distance, speed_limit):
+        """
+        This is a helper method that calculates the new cost to go from the previous node to
+        a new node with a distance and speed_limit between the previous node and new node.
+
+        Use the `speed_limit` and `vehicle_speed` to determine the time/cost it takes to go to
+        the new node from the previous_node and add the time it took to reach the previous_node to it..
+
+        :param previous_node: The previous node that is the fastest way to get to the new node.
+        :type previous_node: tuple[int]
+        :param distance: The distance between the node and new_node
+        :type distance: int
+        :param speed_limit: The speed limit on the road from node to new_node. 
+        :type speed_limit: float
+        :return: The cost to reach the node.
+        :rtype: float
+        """
+        raise NotImplementedError("Please complete this method")
 
 
 ############ END OF CODE BLOCKS, START SCRIPT BELOW! ################

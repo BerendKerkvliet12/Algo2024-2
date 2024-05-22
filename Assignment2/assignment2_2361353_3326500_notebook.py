@@ -457,7 +457,7 @@ class BFSSolverShortestPath():
         """ 
         self.priorityqueue = [(0, source)]
         self.history = {source: (None, 0)}
-        self.destination = destination
+        self.destination = tuple(destination)
         self.graph = graph
 
         self.main_loop()
@@ -508,7 +508,7 @@ class BFSSolverShortestPath():
         :return: Returns True if the base case is reached.
         :rtype: bool
         """
-        return node == self.destination
+        return np.array_equal(node, self.destination)
 
 
     def new_cost(self, previous_node, distance, speed_limit):
@@ -558,6 +558,103 @@ class BFSSolverShortestPath():
         :rtype: list[tuple[int]]  
         """
         return list(self.graph[node])
+
+############ CODE BLOCK 200 ################
+
+class BFSSolverFastestPath(BFSSolverShortestPath):
+    """
+    A class instance should at least contain the following attributes after being called:
+        :param priorityqueue: A priority queue that contains all the nodes that need to be visited 
+                              including the time it takes to reach these nodes.
+        :type priorityqueue: list[tuple[tuple[int], float]]
+        :param history: A dictionary containing the nodes that will be visited and 
+                        as values the node that lead to this node and
+                        the time it takes to get to this node.
+        :type history: dict[tuple[int], tuple[tuple[int], float]]
+    """   
+    def __call__(self, graph, source, destination, vehicle_speed):      
+        """
+        This method gives a fastest route through the grid from source to destination.
+
+        This is the same as the `__call__` method from `BFSSolverShortestPath` except that 
+        we need to store the vehicle speed. 
+        
+        Here, you can see how we can overwrite the `__call__` method but 
+        still use the `__call__` method of BFSSolverShortestPath using `super`.
+        """
+        self.vehicle_speed = vehicle_speed
+        return super(BFSSolverFastestPath, self).__call__(graph, source, destination)
+
+    def new_cost(self, previous_node, distance, speed_limit):
+        """
+        This is a helper method that calculates the new cost to go from the previous node to
+        a new node with a distance and speed_limit between the previous node and new node.
+
+        Use the `speed_limit` and `vehicle_speed` to determine the time/cost it takes to go to
+        the new node from the previous_node and add the time it took to reach the previous_node to it..
+
+        :param previous_node: The previous node that is the fastest way to get to the new node.
+        :type previous_node: tuple[int]
+        :param distance: The distance between the node and new_node
+        :type distance: int
+        :param speed_limit: The speed limit on the road from node to new_node. 
+        :type speed_limit: float
+        :return: The cost to reach the node.
+        :rtype: float
+        """
+        effective_speed = min(vehicle_speed, speed_limit)
+        travel_time = distance / effective_speed
+        return self.history[previous_node][1] + travel_time
+
+############ CODE BLOCK 210 ################
+
+def coordinate_to_node(map_, graph, coordinate):
+    """
+    This function finds a path from a coordinate to its closest nodes.
+    A closest node is defined as the first node you encounter if you go a certain direction.
+    This means that unless the coordinate is a node, you will need to find two closest nodes.
+    If the coordinate is a node then return a list with only the coordinate itself.
+
+    :param map_: The map of the graph
+    :type map_: Map
+    :param graph: A Graph of the map
+    :type graph: Graph
+    :param coordinate: The coordinate from which we want to find the closest node in the graph
+    :type coordinate: tuple[int]
+    :return: This returns a list of closest nodes which contains either 1 or 2 nodes.
+    :rtype: list[tuple[int]]
+    """
+    if coordinate in graph.adjacency_list:
+        return [coordinate]
+
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    closest_nodes = []
+    visited = set()
+    queue = deque([(coordinate, 0)])
+
+    while queue and len(closest_nodes) < 2:
+        current, dist = queue.popleft()
+        if current in visited:
+            continue
+        visited.add(current)
+
+        for direction in directions:
+            next_coord = list(current)
+            while 0 <= next_coord[0] < map_.shape[0] and 0 <= next_coord[1] < map_.shape[1]:
+                next_coord[0] += direction[0]
+                next_coord[1] += direction[1]
+                next_tuple = tuple(next_coord)
+                if map_[next_tuple[0], next_tuple[1]] == 0:
+                    break
+                if next_tuple in graph.adjacency_list:
+                    closest_nodes.append(next_tuple)
+                    break
+                if next_tuple not in visited:
+                    queue.append((next_tuple, dist + 1))
+            if len(closest_nodes) == 2:
+                break
+
+    return closest_nodes
 
 
 ############ END OF CODE BLOCKS, START SCRIPT BELOW! ################

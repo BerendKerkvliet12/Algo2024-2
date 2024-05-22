@@ -457,7 +457,7 @@ class BFSSolverShortestPath():
         """ 
         self.priorityqueue = [(0, source)]
         self.history = {source: (None, 0)}
-        self.destination = destination
+        self.destination = tuple(destination)
         self.graph = graph
 
         self.main_loop()
@@ -508,7 +508,7 @@ class BFSSolverShortestPath():
         :return: Returns True if the base case is reached.
         :rtype: bool
         """
-        return node == self.destination
+        return np.array_equal(node, self.destination)
 
 
     def new_cost(self, previous_node, distance, speed_limit):
@@ -602,7 +602,9 @@ class BFSSolverFastestPath(BFSSolverShortestPath):
         :return: The cost to reach the node.
         :rtype: float
         """
-        raise NotImplementedError("Please complete this method")
+        effective_speed = min(vehicle_speed, speed_limit)
+        travel_time = distance / effective_speed
+        return self.history[previous_node][1] + travel_time
 
 
 ############ END OF CODE BLOCKS, START SCRIPT BELOW! ################

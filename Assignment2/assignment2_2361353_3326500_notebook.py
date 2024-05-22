@@ -343,7 +343,6 @@ class Graph(GraphBluePrint):
                 if neighbor:
                     speed_limit = self.map[neighbor[0], neighbor[1]]
                     self.adjacency_list[node].add((neighbor, distance, speed_limit))
-                    print(f"Edge added: {node} -> {neighbor}, Distance: {distance}, Speed limit: {speed_limit}")
 
 
     def find_next_node_in_adjacency_list(self, node, direction):
@@ -605,56 +604,6 @@ class BFSSolverFastestPath(BFSSolverShortestPath):
         effective_speed = min(vehicle_speed, speed_limit)
         travel_time = distance / effective_speed
         return self.history[previous_node][1] + travel_time
-
-############ CODE BLOCK 210 ################
-
-def coordinate_to_node(map_, graph, coordinate):
-    """
-    This function finds a path from a coordinate to its closest nodes.
-    A closest node is defined as the first node you encounter if you go a certain direction.
-    This means that unless the coordinate is a node, you will need to find two closest nodes.
-    If the coordinate is a node then return a list with only the coordinate itself.
-
-    :param map_: The map of the graph
-    :type map_: Map
-    :param graph: A Graph of the map
-    :type graph: Graph
-    :param coordinate: The coordinate from which we want to find the closest node in the graph
-    :type coordinate: tuple[int]
-    :return: This returns a list of closest nodes which contains either 1 or 2 nodes.
-    :rtype: list[tuple[int]]
-    """
-    if coordinate in graph.adjacency_list:
-        return [coordinate]
-
-    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-    closest_nodes = []
-    visited = set()
-    queue = deque([(coordinate, 0)])
-
-    while queue and len(closest_nodes) < 2:
-        current, dist = queue.popleft()
-        if current in visited:
-            continue
-        visited.add(current)
-
-        for direction in directions:
-            next_coord = list(current)
-            while 0 <= next_coord[0] < map_.shape[0] and 0 <= next_coord[1] < map_.shape[1]:
-                next_coord[0] += direction[0]
-                next_coord[1] += direction[1]
-                next_tuple = tuple(next_coord)
-                if map_[next_tuple[0], next_tuple[1]] == 0:
-                    break
-                if next_tuple in graph.adjacency_list:
-                    closest_nodes.append(next_tuple)
-                    break
-                if next_tuple not in visited:
-                    queue.append((next_tuple, dist + 1))
-            if len(closest_nodes) == 2:
-                break
-
-    return closest_nodes
 
 
 ############ END OF CODE BLOCKS, START SCRIPT BELOW! ################

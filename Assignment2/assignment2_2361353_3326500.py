@@ -42,7 +42,7 @@ class FloodFillSolver():
         """
         self.queue = deque([source])
         self.history = {source: None}
-        self.road_grid = road_grid
+        self.grid = road_grid
         self.destination = destination
         self.main_loop()
 
@@ -62,19 +62,6 @@ class FloodFillSolver():
         :return: A path that is the optimal route from source to destination and its length.
         :rtype: list[tuple[int]], float
         """
-        # if self.destination not in self.history:
-        #     return [], 0
-
-        # path = []
-        # current_node = self.destination
-        # while current_node is not None:
-        #     path.append(current_node)
-        #     if current_node in self.history:  # Check if current_node is in self.history
-        #         current_node = self.history[current_node]
-        #     else:
-        #         break  # Break the loop if current_node is not in self.history
-        # path.reverse()
-        # return path, len(path) - 1
 
         if self.destination not in self.history:
             return [], 0
@@ -83,7 +70,7 @@ class FloodFillSolver():
         current_node = self.destination
         while current_node is not None:
             path.append(current_node)
-            current_node = self.history.get(current_node)  # Safe access to potentially non-existent keys
+            current_node = self.history.get(current_node)  # Get the previous node
         path.reverse()
         return path, len(path) - 1
             
@@ -135,21 +122,6 @@ class FloodFillSolver():
         :return: A list with possible next coordinates that can be visited from the current coordinate.
         :rtype: list[tuple[int]]  
         """
-        # directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # right, down, left, up
-        # possible_steps = []
-        # x, y = node
-        # for dx, dy in directions:
-        #     nx, ny = x + dx, y + dy
-        #     if 0 <= nx < self.road_grid.shape[0] and 0 <= ny < self.road_grid.shape[1]:
-        #         if self.road_grid[nx, ny] == 1:  # assuming 1 is road and 0 is house
-        #             possible_steps.append((nx, ny))
-        # return possible_steps
-
-        # return [(node[0] + 1, node[1]), (node[0] - 1, node[1]), (node[0], node[1] + 1), (node[0], node[1] - 1)]
-
-        # possible_steps = [(node[0] + 1, node[1]), (node[0] - 1, node[1]), (node[0], node[1] + 1), (node[0], node[1] - 1)]
-        # valid_steps = [(x, y) for x, y in possible_steps if 0 <= x < self.road_grid.shape[0] and 0 <= y < self.road_grid.shape[1]and self.road_grid[x, y] == 1]
-        # return valid_steps
 
         directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
         x, y = node
@@ -157,8 +129,8 @@ class FloodFillSolver():
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
             # Ensure next step is within grid bounds and is a road (assuming 1 represents roads)
-            if 0 <= nx < self.road_grid.shape[0] and 0 <= ny < self.road_grid.shape[1]:
-                if self.road_grid[nx, ny] != 0:  # Only consider valid road parts
+            if 0 <= nx < self.grid.shape[0] and 0 <= ny < self.grid.shape[1]:
+                if self.grid[nx, ny] != 0:  # Only consider valid road parts
                     valid_steps.append((nx, ny))
         return valid_steps
 
@@ -601,7 +573,7 @@ class BFSSolverFastestPath(BFSSolverShortestPath):
         :return: The cost to reach the node.
         :rtype: float
         """
-        effective_speed = min(vehicle_speed, speed_limit)
+        effective_speed = min(self.vehicle_speed, speed_limit)
         travel_time = distance / effective_speed
         return self.history[previous_node][1] + travel_time
 
@@ -654,19 +626,6 @@ def coordinate_to_node(map_, graph, coordinate):
                 break
 
     return closest_nodes
-
-############ CODE BLOCK 220 ################
-
-def create_country_graphs(map_):
-    """
-    This function returns a list of all graphs of a country map, where the first graph is the highways and de rest are the cities.
-
-    :param map_: The country map
-    :type map_: Map
-    :return: A list of graphs
-    :rtype: list[Graph]
-    """
-    raise NotImplementedError("Please complete this method")
 
 
 ############ END OF CODE BLOCKS, START SCRIPT BELOW! ################

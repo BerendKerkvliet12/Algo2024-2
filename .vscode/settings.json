@@ -2,7 +2,7 @@
     "python.testing.unittestArgs": [
         "-v",
         "-s",
-        ".",
+        "./Assignment2",
         "-p",
         "*test.py"
     ],

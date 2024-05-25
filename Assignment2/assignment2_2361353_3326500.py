@@ -343,7 +343,6 @@ class Graph(GraphBluePrint):
                 if neighbor:
                     speed_limit = self.map[neighbor[0], neighbor[1]]
                     self.adjacency_list[node].add((neighbor, distance, speed_limit))
-                    print(f"Edge added: {node} -> {neighbor}, Distance: {distance}, Speed limit: {speed_limit}")
 
 
     def find_next_node_in_adjacency_list(self, node, direction):
@@ -602,7 +601,7 @@ class BFSSolverFastestPath(BFSSolverShortestPath):
         :return: The cost to reach the node.
         :rtype: float
         """
-        effective_speed = min(self.vehicle_speed, speed_limit)
+        effective_speed = min(vehicle_speed, speed_limit)
         travel_time = distance / effective_speed
         return self.history[previous_node][1] + travel_time
 

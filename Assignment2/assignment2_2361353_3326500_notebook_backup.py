@@ -42,7 +42,7 @@ class FloodFillSolver():
         """
         self.queue = deque([source])
         self.history = {source: None}
-        self.grid = road_grid
+        self.road_grid = road_grid
         self.destination = destination
         self.main_loop()
 
@@ -63,16 +63,16 @@ class FloodFillSolver():
         :rtype: list[tuple[int]], float
         """
 
-        if self.destination not in self.history:
+        if self.destination not in self.history: # If the destination is not in the history, it is not reachable
             return [], 0
 
         path = []
         current_node = self.destination
-        while current_node is not None:
+        while current_node is not None: # While we have not reached the source
             path.append(current_node)
             current_node = self.history.get(current_node)  # Get the previous node
         path.reverse()
-        return path, len(path) - 1
+        return path, len(path) - 1 # The length of the path is the number of steps taken - 1
             
     def main_loop(self):
         """
@@ -81,11 +81,11 @@ class FloodFillSolver():
         It does not have any inputs nor outputs. 
         Hint, use object attributes to store results.
         """
-        while self.queue:
-            current_node = self.queue.popleft()
-            if self.base_case(current_node):
+        while self.queue: # While there are still nodes to visit
+            current_node = self.queue.popleft() 
+            if self.base_case(current_node): # If the base case is reached,
                 return
-            for new_node in self.next_step(current_node):
+            for new_node in self.next_step(current_node): # Get the next possible steps
                 self.step(current_node, new_node)
         
 
@@ -109,9 +109,9 @@ class FloodFillSolver():
         :param new_node: The next node/coordinate that can be visited from the current node/coordinate
         :type new_node: tuple[int]       
         """
-        if new_node not in self.history:
+        if new_node not in self.history: # If the new node has not been visited yet
             self.history[new_node] = node
-            self.queue.append(new_node)
+            self.queue.append(new_node) # Add the new node to the queue
 
     def next_step(self, node):
         """
@@ -126,13 +126,13 @@ class FloodFillSolver():
         directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
         x, y = node
         valid_steps = []
-        for dx, dy in directions:
+        for dx, dy in directions: # Check all possible directions
             nx, ny = x + dx, y + dy
             # Ensure next step is within grid bounds and is a road (assuming 1 represents roads)
-            if 0 <= nx < self.grid.shape[0] and 0 <= ny < self.grid.shape[1]:
-                if self.grid[nx, ny] != 0:  # Only consider valid road parts
+            if 0 <= nx < self.road_grid.shape[0] and 0 <= ny < self.road_grid.shape[1]:
+                if self.road_grid[nx, ny] != 0:  # Only consider valid road parts
                     valid_steps.append((nx, ny))
-        return valid_steps
+        return valid_steps # Return the valid steps
 
 ############ CODE BLOCK 10 ################
 
@@ -179,15 +179,15 @@ class Graph(GraphBluePrint):
         """
         queue = deque([self.start])
         visited = set()
-        while queue:
+        while queue: # While there are still nodes to visit
             current_node = queue.popleft()
             if current_node in visited:
                 continue
-            visited.add(current_node)
-            actions = self.neighbour_coordinates(current_node)
-            self.adjacency_list_add_node(current_node, actions)
+            visited.add(current_node) # Add the current node to the visited set
+            actions = self.neighbour_coordinates(current_node) # Get the possible actions from the current node
+            self.adjacency_list_add_node(current_node, actions) # Add the current node to the adjacency list
             for action in actions:
-                queue.append(action)
+                queue.append(action) # Add the possible actions to the queue
         
         
                     
@@ -204,12 +204,10 @@ class Graph(GraphBluePrint):
         :param actions: The actions possible from this coordinate, an action is defined as an action in the coordinate state-space.
         :type actions: list[tuple[int]]
         """
-        # if len(actions) == 4 or len(actions) == 3 or :
-        #     self.adjacency_list[coordinate] = set()
-        if len(actions) in [1, 3, 4]:
+        if len(actions) in [1, 3, 4]: # If the coordinate is a dead end or crossing
             self.adjacency_list[coordinate] = set()
         #add corners in the graph
-        elif len(actions) == 2:
+        elif len(actions) == 2: 
         #check if the two actions form a corner
             (x1 , y1) , (x2, y2) = actions
             if (x1 != x2 and y1 != y2):
@@ -230,7 +228,7 @@ class Graph(GraphBluePrint):
         valid_steps = []
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
-            if 0 <= nx < self.map.shape[0] and 0 <= ny < self.map.shape[1]:
+            if 0 <= nx < self.map.shape[0] and 0 <= ny < self.map.shape[1]: # Check if the next step is within the grid
                 if self.map[nx, ny] != 0:
                     valid_steps.append((nx, ny))
         return valid_steps
@@ -293,7 +291,7 @@ class Graph(GraphBluePrint):
         :param color: The Matplotlib color of the arrows, defaults to red
         :type color: string
         """
-        for node, edges in self.adjacency_list.items():
+        for node, edges in self.adjacency_list.items(): # For all nodes in the adjacency list
             for edge in edges:
                 plt.arrow(node[1], node[0], edge[0][1] - node[1], edge[0][0] - node[0], width=width, color=color)
 
@@ -302,19 +300,13 @@ class Graph(GraphBluePrint):
         """
         This method does a depth-first/brute-force search for each node to find the edges of each node.
         """
-        # directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # right, down, left, up
-        # for node in self.adjacency_list:
-        #     for direction in directions:
-        #         neighbor, distance = self.find_next_node_in_adjacency_list(node, direction)
-        #         if neighbor:
-        #             self.adjacency_list[node].add((neighbor, distance, self.map[neighbor[0], neighbor[1]]))
         directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # right, down, left, up
         for node in self.adjacency_list:
             for direction in directions:
-                neighbor, distance = self.find_next_node_in_adjacency_list(node, direction)
+                neighbor, distance = self.find_next_node_in_adjacency_list(node, direction) 
                 if neighbor:
-                    speed_limit = self.map[neighbor[0], neighbor[1]]
-                    self.adjacency_list[node].add((neighbor, distance, speed_limit))
+                    speed_limit = self.map[neighbor[0], neighbor[1]] # The speed limit is the value of the map at the neighbor
+                    self.adjacency_list[node].add((neighbor, distance, speed_limit)) # Add the neighbor to the adjacency list
 
 
     def find_next_node_in_adjacency_list(self, node, direction):
@@ -394,7 +386,7 @@ class FloodFillSolverGraph(FloodFillSolver):
         :return: A list with possible next nodes that can be visited from the current node.
         :rtype: list[tuple[int]]  
         """
-        return [edge[0] for edge in self.graph[node]]
+        return [edge[0] for edge in self.graph[node]] # Return the nodes that can be reached from the current node
 
 ############ CODE BLOCK 130 ################
 
@@ -450,8 +442,8 @@ class BFSSolverShortestPath():
             path.append(step)
             step = self.history[step][0]
         
-        path.reverse()
-        return path, self.history[self.destination][1]
+        path.reverse() # Reverse the path to get the correct order
+        return path, self.history[self.destination][1]  # Return the path and the time it takes to get to the destination
 
     def main_loop(self):
         """
@@ -460,15 +452,15 @@ class BFSSolverShortestPath():
         It does not have any inputs nor outputs. 
         Hint, use object attributes to store results.
         """
-        while self.priorityqueue:
-            self.priorityqueue.sort()  # Ensure the list is sorted to always pop the smallest element
+        while self.priorityqueue: 
+            self.priorityqueue.sort() # Sort the priority queue
             current_distance, current_node = self.priorityqueue.pop(0)
             
-            if self.base_case(current_node):
+            if self.base_case(current_node): # If the base case is reached
                 break
             
-            for neighbor, distance, speed_limit in self.next_step(current_node):
-                self.step(current_node, neighbor, distance, speed_limit)
+            for neighbor, distance, speed_limit in self.next_step(current_node): # Get the next possible steps
+                self.step(current_node, neighbor, distance, speed_limit) # Take a step
 
     def base_case(self, node):
         """
@@ -498,7 +490,7 @@ class BFSSolverShortestPath():
         :return: The cost to reach the node.
         :rtype: float
         """
-        return self.history[previous_node][1] + distance
+        return self.history[previous_node][1] + distance # The cost is the distance from the previous node to the new node
         
 
     def step(self, node, new_node, distance, speed_limit):
@@ -515,7 +507,7 @@ class BFSSolverShortestPath():
         :type speed_limit: float
         """
         new_cost = self.new_cost(node, distance, speed_limit)
-        if new_node not in self.history or new_cost < self.history[new_node][1]:
+        if new_node not in self.history or new_cost < self.history[new_node][1]: # If the new node has not been visited yet or the new cost is lower
             self.history[new_node] = (node, new_cost)
             self.priorityqueue.append((new_cost, new_node))
     
@@ -573,9 +565,9 @@ class BFSSolverFastestPath(BFSSolverShortestPath):
         :return: The cost to reach the node.
         :rtype: float
         """
-        effective_speed = min(self.vehicle_speed, speed_limit)
+        effective_speed = min(self.vehicle_speed, speed_limit) # The effective speed is the minimum of the vehicle speed and the speed limit
         travel_time = distance / effective_speed
-        return self.history[previous_node][1] + travel_time
+        return self.history[previous_node][1] + travel_time # The cost is the time it takes to get from the previous node to the new node
 
 ############ CODE BLOCK 210 ################
 
@@ -595,7 +587,7 @@ def coordinate_to_node(map_, graph, coordinate):
     :return: This returns a list of closest nodes which contains either 1 or 2 nodes.
     :rtype: list[tuple[int]]
     """
-    if coordinate in graph.adjacency_list:
+    if coordinate in graph.adjacency_list: # If the coordinate is a node
         return [coordinate]
 
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
@@ -603,29 +595,42 @@ def coordinate_to_node(map_, graph, coordinate):
     visited = set()
     queue = deque([(coordinate, 0)])
 
-    while queue and len(closest_nodes) < 2:
+    while queue and len(closest_nodes) < 2: # While there are still nodes to visit
         current, dist = queue.popleft()
         if current in visited:
             continue
         visited.add(current)
-
+        
         for direction in directions:
-            next_coord = list(current)
-            while 0 <= next_coord[0] < map_.shape[0] and 0 <= next_coord[1] < map_.shape[1]:
+            next_coord = list(current) # Convert to list to be able to change the values
+            while 0 <= next_coord[0] < map_.shape[0] and 0 <= next_coord[1] < map_.shape[1]: # While the next coordinate is within the grid
                 next_coord[0] += direction[0]
                 next_coord[1] += direction[1]
                 next_tuple = tuple(next_coord)
-                if map_[next_tuple[0], next_tuple[1]] == 0:
+                if map_[next_tuple[0], next_tuple[1]] == 0: # If the next coordinate is an obstacle
                     break
-                if next_tuple in graph.adjacency_list:
+                if next_tuple in graph.adjacency_list: # If the next coordinate is a node
                     closest_nodes.append(next_tuple)
                     break
-                if next_tuple not in visited:
+                if next_tuple not in visited: # If the next coordinate has not been visited yet
                     queue.append((next_tuple, dist + 1))
-            if len(closest_nodes) == 2:
+            if len(closest_nodes) == 2: # If we have found two closest nodes
                 break
 
     return closest_nodes
+
+############ CODE BLOCK 220 ################
+
+def create_country_graphs(map_):
+    """
+    This function returns a list of all graphs of a country map, where the first graph is the highways and de rest are the cities.
+
+    :param map_: The country map
+    :type map_: Map
+    :return: A list of graphs
+    :rtype: list[Graph]
+    """
+    raise NotImplementedError("Please complete this method")
 
 
 ############ END OF CODE BLOCKS, START SCRIPT BELOW! ################

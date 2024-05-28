@@ -632,5 +632,139 @@ def create_country_graphs(map_):
     """
     raise NotImplementedError("Please complete this method")
 
+############ CODE BLOCK 230 ################
+
+class BFSSolverMultipleFastestPaths(BFSSolverFastestPath):
+    """
+    A class instance should at least contain the following attributes after being called:
+        :param priorityqueue: A priority queue that contains all the nodes that need to be visited including the time it takes to reach these nodes.
+        :type priorityqueue: list[tuple[tuple[int], float]]
+        :param history: A dictionary containing the nodes that are visited and as values the node that leads to this node including the time it takes from the start node.
+        :type history: dict[tuple[int], tuple[tuple[int], float]]
+        :param found_destinations: The destinations already found with Dijkstra.
+        :type found_destinations: list[tuple[int]]
+    """
+    def __init__(self, find_at_most=3):
+        """
+        This init makes it possible to make a different Dijkstra algorithm 
+        that find more or less destination nodes before it stops searching.
+
+        :param find_at_most: The number of found destination nodes before the algorithm stops
+        :type find_at_most: int
+        """
+        self.find_at_most = find_at_most
+    
+    def __call__(self, graph, sources, destinations, vehicle_speed):      
+        """
+        This method gives the top three fastest routes through the grid from any of the sources to any of the destinations.
+        You start at the sources and the algorithm ends if you reach enough destinations, both nodes should be included in the path.
+        A route consists of a list of nodes (which are coordinates).
+
+        :param graph: The graph that represents the map.
+        :type graph: Graph
+        :param sources: The nodes where the path starts and the time it took to get here.
+        :type sources: list[tuple[tuple[int], float]]
+        :param destinations: The nodes where the path ends and the time it took to get here.
+        :type destinations: list[tuple[tuple[int], float]]
+        :param vehicle_speed: The maximum speed of the vehicle.
+        :type vehicle_speed: float
+        :return: A list of the n fastest paths and time they take, sorted from fastest to slowest 
+        :rtype: list[tuple[path, float]], where path is a fictional data type consisting of a list[tuple[int]]
+        """       
+        self.priorityqueue = sorted(sources, key=lambda x:x[1])
+        self.history = {s: (None, t) for s, t in sources}
+        
+        self.destinations = destinations
+        self.destination_nodes = [dest[0] for dest in destinations]
+        self.found_destinations = []
+
+        raise NotImplementedError("Please complete this method")       
+
+    def find_n_paths(self):
+        """
+        This method needs to find the top `n` fastest paths between any source node and any destination node.
+        This does not mean that each source node has to be in a path nor that each destination node needs to be in a path.
+
+        Hint1: The fastest path is stored in each node by linking to the previous node. 
+               Therefore, if you start searching from a destination node,
+               you always find the optimal path from that destination node.
+               This is similar if you only had one destination node.         
+
+        :return: A list of the n fastest paths and time they take, sorted from fastest to slowest 
+        :rtype: list[tuple[path, float]], where path is a fictional data type consisting of a list[tuple[int]]
+        """
+        raise NotImplementedError("Please complete this method")       
+        
+    def base_case(self, node):
+        """
+        This method checks if the base case is reached and
+        updates self.found_destinations
+
+        :param node: The current node
+        :type node: tuple[int]
+        :return: Returns True if the base case is reached.
+        :rtype: bool
+        """
+        raise NotImplementedError("Please complete this method")
+
+############ CODE BLOCK 235 ################
+
+class BFSSolverFastestPathMD(BFSSolverFastestPath):
+    def __call__(self, graph, source, destinations, vehicle_speed):      
+        """
+        This method is functionally no different than the call method of BFSSolverFastestPath
+        except for what `destination` is.
+
+        See for an explanation of all arguments `BFSSolverFastestPath`.
+        
+        :param destinations: The nodes where the path ends.
+        :type destinations: list[tuple[int]]
+        """
+        self.priorityqueue = [(source, 0)]
+        self.history = {source: (None, 0)}
+        self.destinations = destinations
+        self.destination = None
+        self.vehicle_speed = vehicle_speed
+
+        raise NotImplementedError("Please complete this method")       
+
+    def base_case(self, node):
+        """
+        This method checks if the base case is reached.
+
+        :param node: The current node
+        :type node: tuple[int]
+        :return: returns True if the base case is reached.
+        :rtype: bool
+        """
+        raise NotImplementedError("Please complete this method")
+
+############ CODE BLOCK 300 ################
+
+def path_length(coordinate, closest_nodes, map_, vehicle_speed):
+    return [(node, (abs(node[0] - coordinate[0]) + abs(node[1] - coordinate[1])) / min(vehicle_speed, map_[coordinate])) for node in closest_nodes] 
+
+def find_path(coordinate_A, coordinate_B, map_, vehicle_speed, find_at_most=3):
+    """
+    Find the optimal path according to the divide and conquer strategy from coordinate A to coordinate B.
+
+    See hints and rules above on how to do this.
+
+    :param coordinate_A: The start coordinate
+    :type coordinate_A: tuple[int]
+    :param coordinate_B: The end coordinate
+    :type coordinate_B: tuple[int]
+    :param map_: The map on which the path needs to be found
+    :type map_: Map
+    :param vehicle_speed: The maximum vehicle speed
+    :type vehicle_speed: float
+    :param find_at_most: The number of routes to find for each path finding algorithm, defaults to 3. 
+                         Note, that this is only needed if you did 2.3.
+    :type find_at_most: int, optional
+    :return: The path between coordinate_A and coordinate_B. Also, return the cost.
+    :rtype: list[tuple[int]], float
+    """
+    raise NotImplementedError("Please complete this method")
+
 
 ############ END OF CODE BLOCKS, START SCRIPT BELOW! ################

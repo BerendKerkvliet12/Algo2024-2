@@ -739,32 +739,5 @@ class BFSSolverFastestPathMD(BFSSolverFastestPath):
         """
         raise NotImplementedError("Please complete this method")
 
-############ CODE BLOCK 300 ################
-
-def path_length(coordinate, closest_nodes, map_, vehicle_speed):
-    return [(node, (abs(node[0] - coordinate[0]) + abs(node[1] - coordinate[1])) / min(vehicle_speed, map_[coordinate])) for node in closest_nodes] 
-
-def find_path(coordinate_A, coordinate_B, map_, vehicle_speed, find_at_most=3):
-    """
-    Find the optimal path according to the divide and conquer strategy from coordinate A to coordinate B.
-
-    See hints and rules above on how to do this.
-
-    :param coordinate_A: The start coordinate
-    :type coordinate_A: tuple[int]
-    :param coordinate_B: The end coordinate
-    :type coordinate_B: tuple[int]
-    :param map_: The map on which the path needs to be found
-    :type map_: Map
-    :param vehicle_speed: The maximum vehicle speed
-    :type vehicle_speed: float
-    :param find_at_most: The number of routes to find for each path finding algorithm, defaults to 3. 
-                         Note, that this is only needed if you did 2.3.
-    :type find_at_most: int, optional
-    :return: The path between coordinate_A and coordinate_B. Also, return the cost.
-    :rtype: list[tuple[int]], float
-    """
-    raise NotImplementedError("Please complete this method")
-
 
 ############ END OF CODE BLOCKS, START SCRIPT BELOW! ################

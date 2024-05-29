@@ -453,7 +453,6 @@ class BFSSolverShortestPath():
         Hint, use object attributes to store results.
         """
         while self.priorityqueue: 
-            self.priorityqueue.sort() # Sort the priority queue
             current_distance, current_node = self.priorityqueue.pop(0)
             
             if self.base_case(current_node): # If the base case is reached
@@ -703,88 +702,41 @@ class BFSSolverMultipleFastestPaths(BFSSolverFastestPath):
         :return: A list of the n fastest paths and time they take, sorted from fastest to slowest 
         :rtype: list[tuple[path, float]], where path is a fictional data type consisting of a list[tuple[int]]
         """       
-        self.priorityqueue = sorted(sources, key=lambda x: x[1])
+        self.priorityqueue = sorted(sources, key=lambda x:x[1])
         self.history = {s: (None, t) for s, t in sources}
         
         self.destinations = destinations
-        self.destination_nodes = [tuple(dest[0]) for dest in destinations]
+        self.destination_nodes = [dest[0] for dest in destinations]
         self.found_destinations = []
 
-        self.main_loop()
-        return self.find_n_paths()
-
-    def main_loop(self):
-        """
-        This method contains the logic of the flood-fill algorithm for the shortest path problem,
-        adjusted to handle multiple source nodes and find n paths.
-        """
-        while self.priorityqueue and len(self.found_destinations) < self.find_at_most:
-            self.priorityqueue.sort()
-            current_cost, current_node = self.priorityqueue.pop(0)
-            
-            if self.base_case(current_node):
-                continue
-            
-            for neighbor, distance, speed_limit in self.next_step(current_node):
-                self.step(current_node, neighbor, distance, speed_limit)
-
-    def base_case(self, node):
-        """
-        This method checks if the base case is reached and
-        updates self.found_destinations.
-
-        :param node: The current node
-        :type node: tuple[int]
-        :return: Returns True if the base case is reached.
-        :rtype: bool
-        """
-        if tuple(node) in self.destination_nodes:
-            self.found_destinations.append(node)
-            return True
-        return False
+        raise NotImplementedError("Please complete this method")       
 
     def find_n_paths(self):
         """
         This method needs to find the top `n` fastest paths between any source node and any destination node.
         This does not mean that each source node has to be in a path nor that each destination node needs to be in a path.
 
+        Hint1: The fastest path is stored in each node by linking to the previous node. 
+               Therefore, if you start searching from a destination node,
+               you always find the optimal path from that destination node.
+               This is similar if you only had one destination node.         
+
         :return: A list of the n fastest paths and time they take, sorted from fastest to slowest 
         :rtype: list[tuple[path, float]], where path is a fictional data type consisting of a list[tuple[int]]
         """
-        paths = []
-        for destination in self.found_destinations:
-            path = []
-            step = destination
-            while step is not None:
-                path.append(step)
-                step = self.history[step][0]
-            path.reverse()
-            total_cost = self.history[destination][1]
-            dest_cost = next(dest[1] for dest in self.destinations if tuple(dest[0]) == tuple(destination))
-            total_cost += dest_cost
-            paths.append((path, total_cost))
+        raise NotImplementedError("Please complete this method")       
         
-        paths.sort(key=lambda x: x[1])
-        return paths[:self.find_at_most]
+    def base_case(self, node):
+        """
+        This method checks if the base case is reached and
+        updates self.found_destinations
 
-# Testing the function
-# If you put the map generated in a separate cell you can run multiple tests on the same map
-map_ = Map(2, (1,3))
-
-plt.matplotlib.rcParams['figure.dpi'] = min(1000, max(50, map_.size ** 0.5 // 4))  # Number of pixels, therefore, the quality of the image. A large dpi is very slow.
-
-graph = Graph(map_)
-start = [((0,0), 0)]
-ends = [(graph.get_random_node(), 0), (graph.get_random_node(), 0), (graph.get_random_node(), 0)]
-vehicle_speed = 180
-
-print(ends)
-paths = BFSSolverMultipleFastestPaths()(graph, start, ends, vehicle_speed)
-for path, time in paths:
-    print(f"The estimate travel time for the path is: {time}")
-    print(path)
-    graph.show_coordinates(color='r', size=10)
-    map_.show(path, True)
+        :param node: The current node
+        :type node: tuple[int]
+        :return: Returns True if the base case is reached.
+        :rtype: bool
+        """
+        raise NotImplementedError("Please complete this method")
 
 
 ############ END OF CODE BLOCKS, START SCRIPT BELOW! ################

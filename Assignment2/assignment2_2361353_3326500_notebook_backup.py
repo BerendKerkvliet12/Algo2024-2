@@ -619,18 +619,86 @@ def coordinate_to_node(map_, graph, coordinate):
 
     return closest_nodes
 
-############ CODE BLOCK 220 ################
+############ CODE BLOCK 300 ################
 
-def create_country_graphs(map_):
+def path_length(coordinate, closest_nodes, map_, vehicle_speed):
+    return [(node, (abs(node[0] - coordinate[0]) + abs(node[1] - coordinate[1])) / min(vehicle_speed, map_[coordinate])) for node in closest_nodes]
+
+
+def find_path(coordinate_A, coordinate_B, map_, vehicle_speed, find_at_most=3):
     """
-    This function returns a list of all graphs of a country map, where the first graph is the highways and de rest are the cities.
+    Find the optimal path according to the divide and conquer strategy from coordinate A to coordinate B.
 
-    :param map_: The country map
+    :param coordinate_A: The start coordinate
+    :type coordinate_A: tuple[int]
+    :param coordinate_B: The end coordinate
+    :type coordinate_B: tuple[int]
+    :param map_: The map on which the path needs to be found
     :type map_: Map
-    :return: A list of graphs
-    :rtype: list[Graph]
+    :param vehicle_speed: The maximum vehicle speed
+    :type vehicle_speed: float
+    :param find_at_most: The number of routes to find for each path finding algorithm, defaults to 3. 
+                         Note, that this is only needed if you did 2.3.
+    :type find_at_most: int, optional
+    :return: The path between coordinate_A and coordinate_B. Also, return the cost.
+    :rtype: list[tuple[int]], float
     """
-    raise NotImplementedError("Please complete this method")
+    graph = Graph(map_)
+    
+    # Find the closest nodes to coordinate A and coordinate B
+    closest_nodes_A = coordinate_to_node(map_, graph, coordinate_A)
+    closest_nodes_B = coordinate_to_node(map_, graph, coordinate_B)
+    
+    # Debugging
+    print(f"Closest nodes to A: {closest_nodes_A}")
+    print(f"Closest nodes to B: {closest_nodes_B}")
+    
+    # Calculate path length for each closest node
+    path_lengths_A = path_length(coordinate_A, closest_nodes_A, map_, vehicle_speed)
+    path_lengths_B = path_length(coordinate_B, closest_nodes_B, map_, vehicle_speed)
+    
+    # Find the highway exits for the cities of coordinate A and coordinate B
+    highway_exits = map_.get_all_city_exits()
+    
+    # Debugging
+    print(f"Highway exits: {highway_exits}")
+    
+    # Find the nearest highway exits for closest nodes A and B
+    closest_exit_A = min(highway_exits, key=lambda exit: min([abs(exit[0] - node[0]) + abs(exit[1] - node[1]) for node in closest_nodes_A]))
+    closest_exit_B = min(highway_exits, key=lambda exit: min([abs(exit[0] - node[0]) + abs(exit[1] - node[1]) for node in closest_nodes_B]))
+    
+    # Debugging
+    print(f"Closest exit to A: {closest_exit_A}")
+    print(f"Closest exit to B: {closest_exit_B}")
+    
+    # Initialize the BFS solver for the fastest path
+    bfs_solver = BFSSolverFastestPath()
+    
+    # Find the path from Coordinate A to Closest Node A
+    path_A_to_node_A, time_A_to_node_A = bfs_solver(graph, coordinate_A, closest_nodes_A[0], vehicle_speed)
+    print(f"Path A to Node A: {path_A_to_node_A}, Time: {time_A_to_node_A}")
+    
+    # Find the path from Closest Node A to Highway Exit A
+    path_node_A_to_exit_A, time_node_A_to_exit_A = bfs_solver(graph, closest_nodes_A[0], closest_exit_A, vehicle_speed)
+    print(f"Path Node A to Exit A: {path_node_A_to_exit_A}, Time: {time_node_A_to_exit_A}")
+    
+    # Find the path from Highway Exit A to Highway Exit B
+    path_exit_A_to_exit_B, time_exit_A_to_exit_B = bfs_solver(graph, closest_exit_A, closest_exit_B, vehicle_speed)
+    print(f"Path Exit A to Exit B: {path_exit_A_to_exit_B}, Time: {time_exit_A_to_exit_B}")
+    
+    # Find the path from Highway Exit B to Closest Node B
+    path_exit_B_to_node_B, time_exit_B_to_node_B = bfs_solver(graph, closest_exit_B, closest_nodes_B[0], vehicle_speed)
+    print(f"Path Exit B to Node B: {path_exit_B_to_node_B}, Time: {time_exit_B_to_node_B}")
+    
+    # Find the path from Closest Node B to Coordinate B
+    path_node_B_to_B, time_node_B_to_B = bfs_solver(graph, closest_nodes_B[0], coordinate_B, vehicle_speed)
+    print(f"Path Node B to B: {path_node_B_to_B}, Time: {time_node_B_to_B}")
+    
+    # Combine all paths
+    total_path = path_A_to_node_A + path_node_A_to_exit_A[1:] + path_exit_A_to_exit_B[1:] + path_exit_B_to_node_B[1:] + path_node_B_to_B[1:]
+    total_time = time_A_to_node_A + time_node_A_to_exit_A + time_exit_A_to_exit_B + time_exit_B_to_node_B + time_node_B_to_B
+    
+    return total_path, total_time
 
 
 ############ END OF CODE BLOCKS, START SCRIPT BELOW! ################

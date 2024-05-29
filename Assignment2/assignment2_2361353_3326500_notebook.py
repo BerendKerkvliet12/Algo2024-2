@@ -623,14 +623,46 @@ def coordinate_to_node(map_, graph, coordinate):
 
 def create_country_graphs(map_):
     """
-    This function returns a list of all graphs of a country map, where the first graph is the highways and de rest are the cities.
+    This function returns a list of all graphs of a country map, where the first graph is the highways and the rest are the cities.
 
     :param map_: The country map
     :type map_: Map
     :return: A list of graphs
     :rtype: list[Graph]
     """
-    raise NotImplementedError("Please complete this method")
+    main_graph = Graph(map_)
+    highway_graph = Graph(map_)
+    highway_graph.adjacency_list = {}
+    city_graphs = []
+
+    visited = set()
+    
+    for node, value in np.ndenumerate(map_):
+        if value == 2:  # Assuming 2 represents highways
+            highway_graph.adjacency_list[node] = set()
+        elif value == 1:  # Assuming 1 represents city roads
+            if node not in visited:
+                city_queue = deque([node])
+                city_nodes = set()
+                
+                while city_queue:
+                    current_node = city_queue.popleft()
+                    if current_node in visited:
+                        continue
+                    visited.add(current_node)
+                    city_nodes.add(current_node)
+                    
+                    for neighbor in main_graph.neighbour_coordinates(current_node):
+                        if map_[neighbor] == 1 and neighbor not in visited:
+                            city_queue.append(neighbor)
+                
+                city_graph = Graph(map_)
+                city_graph.adjacency_list = {n: set() for n in city_nodes}
+                city_graph.find_edges()
+                city_graphs.append(city_graph)
+
+    highway_graph.find_edges()
+    return [highway_graph] + city_graphs
 
 ############ CODE BLOCK 230 ################
 
@@ -671,73 +703,88 @@ class BFSSolverMultipleFastestPaths(BFSSolverFastestPath):
         :return: A list of the n fastest paths and time they take, sorted from fastest to slowest 
         :rtype: list[tuple[path, float]], where path is a fictional data type consisting of a list[tuple[int]]
         """       
-        self.priorityqueue = sorted(sources, key=lambda x:x[1])
+        self.priorityqueue = sorted(sources, key=lambda x: x[1])
         self.history = {s: (None, t) for s, t in sources}
         
         self.destinations = destinations
-        self.destination_nodes = [dest[0] for dest in destinations]
+        self.destination_nodes = [tuple(dest[0]) for dest in destinations]
         self.found_destinations = []
 
-        raise NotImplementedError("Please complete this method")       
+        self.main_loop()
+        return self.find_n_paths()
 
-    def find_n_paths(self):
+    def main_loop(self):
         """
-        This method needs to find the top `n` fastest paths between any source node and any destination node.
-        This does not mean that each source node has to be in a path nor that each destination node needs to be in a path.
-
-        Hint1: The fastest path is stored in each node by linking to the previous node. 
-               Therefore, if you start searching from a destination node,
-               you always find the optimal path from that destination node.
-               This is similar if you only had one destination node.         
-
-        :return: A list of the n fastest paths and time they take, sorted from fastest to slowest 
-        :rtype: list[tuple[path, float]], where path is a fictional data type consisting of a list[tuple[int]]
+        This method contains the logic of the flood-fill algorithm for the shortest path problem,
+        adjusted to handle multiple source nodes and find n paths.
         """
-        raise NotImplementedError("Please complete this method")       
-        
+        while self.priorityqueue and len(self.found_destinations) < self.find_at_most:
+            self.priorityqueue.sort()
+            current_cost, current_node = self.priorityqueue.pop(0)
+            
+            if self.base_case(current_node):
+                continue
+            
+            for neighbor, distance, speed_limit in self.next_step(current_node):
+                self.step(current_node, neighbor, distance, speed_limit)
+
     def base_case(self, node):
         """
         This method checks if the base case is reached and
-        updates self.found_destinations
+        updates self.found_destinations.
 
         :param node: The current node
         :type node: tuple[int]
         :return: Returns True if the base case is reached.
         :rtype: bool
         """
-        raise NotImplementedError("Please complete this method")
+        if tuple(node) in self.destination_nodes:
+            self.found_destinations.append(node)
+            return True
+        return False
 
-############ CODE BLOCK 235 ################
-
-class BFSSolverFastestPathMD(BFSSolverFastestPath):
-    def __call__(self, graph, source, destinations, vehicle_speed):      
+    def find_n_paths(self):
         """
-        This method is functionally no different than the call method of BFSSolverFastestPath
-        except for what `destination` is.
+        This method needs to find the top `n` fastest paths between any source node and any destination node.
+        This does not mean that each source node has to be in a path nor that each destination node needs to be in a path.
 
-        See for an explanation of all arguments `BFSSolverFastestPath`.
+        :return: A list of the n fastest paths and time they take, sorted from fastest to slowest 
+        :rtype: list[tuple[path, float]], where path is a fictional data type consisting of a list[tuple[int]]
+        """
+        paths = []
+        for destination in self.found_destinations:
+            path = []
+            step = destination
+            while step is not None:
+                path.append(step)
+                step = self.history[step][0]
+            path.reverse()
+            total_cost = self.history[destination][1]
+            dest_cost = next(dest[1] for dest in self.destinations if tuple(dest[0]) == tuple(destination))
+            total_cost += dest_cost
+            paths.append((path, total_cost))
         
-        :param destinations: The nodes where the path ends.
-        :type destinations: list[tuple[int]]
-        """
-        self.priorityqueue = [(source, 0)]
-        self.history = {source: (None, 0)}
-        self.destinations = destinations
-        self.destination = None
-        self.vehicle_speed = vehicle_speed
+        paths.sort(key=lambda x: x[1])
+        return paths[:self.find_at_most]
 
-        raise NotImplementedError("Please complete this method")       
+# Testing the function
+# If you put the map generated in a separate cell you can run multiple tests on the same map
+map_ = Map(2, (1,3))
 
-    def base_case(self, node):
-        """
-        This method checks if the base case is reached.
+plt.matplotlib.rcParams['figure.dpi'] = min(1000, max(50, map_.size ** 0.5 // 4))  # Number of pixels, therefore, the quality of the image. A large dpi is very slow.
 
-        :param node: The current node
-        :type node: tuple[int]
-        :return: returns True if the base case is reached.
-        :rtype: bool
-        """
-        raise NotImplementedError("Please complete this method")
+graph = Graph(map_)
+start = [((0,0), 0)]
+ends = [(graph.get_random_node(), 0), (graph.get_random_node(), 0), (graph.get_random_node(), 0)]
+vehicle_speed = 180
+
+print(ends)
+paths = BFSSolverMultipleFastestPaths()(graph, start, ends, vehicle_speed)
+for path, time in paths:
+    print(f"The estimate travel time for the path is: {time}")
+    print(path)
+    graph.show_coordinates(color='r', size=10)
+    map_.show(path, True)
 
 
 ############ END OF CODE BLOCKS, START SCRIPT BELOW! ################
